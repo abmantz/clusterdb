@@ -29,8 +29,8 @@ class PSZ2:
         x = pd.read_csv('data/psz2.csv.gz')
         self.pos = SkyCoord(ra=x['RA'], dec=x['dec'], unit='deg')
         self.z = x['redshift']
-        self.pos_err = x['pos_err'] * u.degree
-        self.r500 = x['r500'] * u.degree
+        self.pos_err = np.array(x['pos_err']) * u.degree
+        self.r500 = np.array(x['r500']) * u.degree
         self.name = x['name']
     def search(self, from_coords, radius):
         d = from_coords.separation(self.pos)
