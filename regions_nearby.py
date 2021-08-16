@@ -24,19 +24,83 @@ class Match:
         s += 'distance: ' + str(self.distance.to(u.arcmin))
         return s
 
-class PSZ2:
+class generic_from_csv:
     def __init__(self):
-        x = pd.read_csv('data/psz2.csv.gz')
-        self.pos = SkyCoord(ra=x['RA'], dec=x['dec'], unit='deg')
-        self.z = x['redshift']
-        self.pos_err = np.array(x['pos_err']) * u.degree
-        self.r500 = np.array(x['r500']) * u.degree
-        self.name = x['name']
+        # create required fields, not that things will function without being
+        # properly constructed
+        self.pos = None
+        self.z = None
+        self.pos_err = None
+        self.r500 = None
+        self.name = None
+    def read(self, fname, ra_col, dec_col, catname='', z_col=None, name_col=None, pos_err_col=None, r500_col=None, coord_unit='deg', pos_err_unit=u.degree, r500_unit=u.degree):
+        x = pd.read_csv(fname)
+        self.pos = SkyCoord(ra=x[ra_col], dec=x[dec_col], unit=coord_unit)
+        if z_col is None:
+            self.z = [None] * len(self.pos)
+        else:
+            self.z = x[z_col]
+        if pos_err_col is None:
+            self.pos_err = [None] * len(self.pos)
+        else:
+            self.pos_err = np.array(x[pos_err_col]) * pos_err_unit
+        if r500_col is None:
+            self.r500 = [None] * len(self.pos)
+        else:
+            self.r500 = np.array(x[r500_col]) * r500_unit
+        if name_col is None:
+            self.name = ["???"+catname] * len(self.pos)
+        else:
+            self.name = [n+catname for n in x[name_col]]
     def search(self, from_coords, radius):
         d = from_coords.separation(self.pos)
         selection = np.where(d<=radius)[0]
         return [Match(self.pos[i], d[i], name=self.name[i], radius=self.r500[i]) for i in selection[np.argsort(d[selection])]]
 
+class BCS(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/bcs.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (BCS)', z_col='z', name_col='Name')
+
+class eBCS(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/ebcs.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (eBCS)', z_col='z', name_col='Name')
+
+class REFLEX(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/reflex.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (REFLEX)', z_col='z', name_col='RXC')
+
+class CIZA(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/ciza.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (CIZA)', z_col='z', name_col='CIZA')
+        
+class CIZA2(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/ciza2.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (CIZA2)', z_col='z', name_col='CIZA')
+        
+class PSZ2(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/psz2.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', pos_err_col='pos_err', r500_col='r500')
+
+class SPTSZ(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/sptsz.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
+
+class SPTECS(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/sptecs.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
+
+class SPTPOL100d(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/sptpol100d.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
 
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.")
 parser.add_argument(
@@ -62,10 +126,12 @@ radius = args.radius * u.arcmin
 
 target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
 
+cats = [BCS(), eBCS(), REFLEX(), CIZA(), CIZA2(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d()]
+
 print('# Region file format: DS9 version 4.1')
 print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
 print('fk5')
 
-for cat in [PSZ2()]:
+for cat in cats:
     for m in cat.search(target, radius):
         print(str(m))
