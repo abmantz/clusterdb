@@ -34,3 +34,5 @@ One can either write a new class to deal with a new data format, or inherit the 
 * source names
 
 Optionally, one can include a radius (in angular units), in which case the corresponding region written will be a circle. Otherwise, the region will be a point.
+
+The `notes/` directory contains scripts that note the provenance of the published catalog files, and the operations used to convert them to csv format.
