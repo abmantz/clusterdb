@@ -52,6 +52,7 @@ class generic_from_csv:
             self.name = ["???"+catname] * len(self.pos)
         else:
             self.name = [n+catname for n in x[name_col]]
+        return x
     def search(self, from_coords, radius):
         d = from_coords.separation(self.pos)
         selection = np.where(d<=radius)[0]
@@ -82,6 +83,17 @@ class CIZA2(generic_from_csv):
         generic_from_csv.__init__(self) # unnecessarily
         self.read('data/ciza2.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (CIZA2)', z_col='z', name_col='CIZA')
         
+class MCXC(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        catname = ' (MCXC)'
+        x = self.read('data/mcxc.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=catname, z_col='z', name_col='MCXC', r500_col='r500')
+        for i in range(len(self.name)):
+            if x['Aname'][i] != "":
+                self.name[i] = str(x['Aname'][i])+catname
+            elif x['Oname'][i] != "":
+                self.name[i] = str(x['Oname'][i])+catname
+
 class PSZ2(generic_from_csv):
     def __init__(self):
         generic_from_csv.__init__(self) # unnecessarily
@@ -102,6 +114,7 @@ class SPTPOL100d(generic_from_csv):
         generic_from_csv.__init__(self) # unnecessarily
         self.read('data/sptpol100d.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
 
+        
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.")
 parser.add_argument(
     'ra',
@@ -119,6 +132,12 @@ parser.add_argument(
     help="search radius in arcmin (default=15')",
     default=15.0
 )
+parser.add_argument(
+    '--old-xray',
+    dest="oldxray",
+    help="check BCS, REFLEX, etc. in addition to MCXC",
+    action="store_true"
+)
 
 
 args = parser.parse_args()
@@ -126,7 +145,9 @@ radius = args.radius * u.arcmin
 
 target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
 
-cats = [BCS(), eBCS(), REFLEX(), CIZA(), CIZA2(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d()]
+cats = [MCXC(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d()]
+if args.oldxray:
+    cats += [BCS(), eBCS(), REFLEX(), CIZA(), CIZA2()]
 
 print('# Region file format: DS9 version 4.1')
 print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
