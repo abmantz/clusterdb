@@ -26,6 +26,7 @@ Note: the catalogs above are in principle included in the MCXC, and are only sea
   * 2500 square degree SPT-SZ survey: [Bleem et al. 2015](http://adsabs.harvard.edu/abs/2015ApJS..216...27B)
   * SPTPol Extended Cluster Survey (SPTECS): [Bleem et al. 2020](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...25B)
   * SPTPol 100 square degree: [Huang et al. 2020](https://ui.adsabs.harvard.edu/abs/2020AJ....159..110H)
+* Atacama Cosmology Telescope (DR5): [Hilton et al. 2021](https://lambda.gsfc.nasa.gov/product/act/actpol_prod_table.cfm)
 
 ## Adding a new catalog
 
@@ -36,3 +37,5 @@ One can either write a new class to deal with a new data format, or inherit the 
 Optionally, one can include a radius (in angular units), in which case the corresponding region written will be a circle. Otherwise, the region will be a point.
 
 The `notes/` directory contains scripts that note the provenance of the published catalog files, and the operations used to convert them to csv format.
+
+Finally, don't forget to add the new catalog to the list in this README, above.

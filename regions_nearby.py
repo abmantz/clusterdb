@@ -5,11 +5,12 @@ import numpy as np
 import pandas as pd
 
 class Match:
-    def __init__(self, coords, distance, name=None, radius=None):
+    def __init__(self, coords, distance, name=None, radius=None, redshift=None):
         self.coords = coords
         self.radius = radius
         self.distance = distance
         self.name = name
+        self.redshift = redshift
     def __str__(self):
         if self.radius is None or not np.isfinite(self.radius):
             s = 'point('
@@ -21,6 +22,8 @@ class Match:
         s += ") # "
         if self.name is not None:
             s += "text={" + self.name + '} '
+        if self.redshift is not None:
+            s += 'z=' + str(self.redshift) + ' '
         s += 'distance: ' + str(self.distance.to(u.arcmin))
         return s
 
@@ -56,7 +59,7 @@ class generic_from_csv:
     def search(self, from_coords, radius):
         d = from_coords.separation(self.pos)
         selection = np.where(d<=radius)[0]
-        return [Match(self.pos[i], d[i], name=self.name[i], radius=self.r500[i]) for i in selection[np.argsort(d[selection])]]
+        return [Match(self.pos[i], d[i], name=self.name[i], radius=self.r500[i], redshift=self.z[i]) for i in selection[np.argsort(d[selection])]]
 
 class BCS(generic_from_csv):
     def __init__(self):
@@ -114,6 +117,11 @@ class SPTPOL100d(generic_from_csv):
         generic_from_csv.__init__(self) # unnecessarily
         self.read('data/sptpol100d.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
 
+class AdvancedACTPol(generic_from_csv):
+    def __init__(self):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read('data/aactpol.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
+
         
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.")
 parser.add_argument(
@@ -145,7 +153,7 @@ radius = args.radius * u.arcmin
 
 target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
 
-cats = [MCXC(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d()]
+cats = [MCXC(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d(), AdvancedACTPol()]
 if args.oldxray:
     cats += [BCS(), eBCS(), REFLEX(), CIZA(), CIZA2()]
 
