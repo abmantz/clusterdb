@@ -11,12 +11,12 @@ class Match:
         self.distance = distance
         self.name = name
     def __str__(self):
-        if self.radius is None:
+        if self.radius is None or not np.isfinite(self.radius):
             s = 'point('
         else:
             s = 'circle('
         s += str(self.coords.ra.degree) + "," + str(self.coords.dec.degree)
-        if self.radius is not None:
+        if self.radius is not None and np.isfinite(self.radius):
             s += "," + str(self.radius.to_value(u.degree))
         s += ") # "
         if self.name is not None:
