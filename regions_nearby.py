@@ -1,6 +1,7 @@
 import argparse
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+from glob import glob
 import numpy as np
 import pandas as pd
 
@@ -122,6 +123,11 @@ class AdvancedACTPol(generic_from_csv):
         generic_from_csv.__init__(self) # unnecessarily
         self.read('data/aactpol.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
 
+class YetAnotherClusterSurvey(generic_from_csv):
+    def __init__(self, csvname):
+        generic_from_csv.__init__(self) # unnecessarily
+        self.read(csvname, ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name')
+
         
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.")
 parser.add_argument(
@@ -156,6 +162,8 @@ target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
 cats = [MCXC(), PSZ2(), SPTSZ(), SPTECS(), SPTPOL100d(), AdvancedACTPol()]
 if args.oldxray:
     cats += [BCS(), eBCS(), REFLEX(), CIZA(), CIZA2()]
+for f in glob('local/*.csv.gz'):
+    cats += [YetAnotherClusterSurvey(f)]
 
 print('# Region file format: DS9 version 4.1')
 print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
