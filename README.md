@@ -27,6 +27,7 @@ Note: the catalogs above are in principle included in the MCXC, and are only sea
   * SPTPol Extended Cluster Survey (SPTECS): [Bleem et al. 2020](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...25B)
   * SPTPol 100 square degree: [Huang et al. 2020](https://ui.adsabs.harvard.edu/abs/2020AJ....159..110H)
 * Atacama Cosmology Telescope (DR5): [Hilton et al. 2021](https://lambda.gsfc.nasa.gov/product/act/actpol_prod_table.cfm)
+* Sloan Digital Sky Survey (DR8) RedMaPPer: [Rykoff et al. 2014](http://adsabs.harvard.edu/abs/2014ApJ...785..104R)
 
 ## Adding a new catalog
 
