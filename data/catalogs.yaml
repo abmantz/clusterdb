@@ -1,0 +1,115 @@
+BCS:
+  class: generic_from_csv
+  fname: data/bcs.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (BCS)"
+  z_col: z
+  name_col: Name
+
+eBCS:
+  class: generic_from_csv
+  fname: data/ebcs.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (eBCS)"
+  z_col: z
+  name_col: Name
+
+REFLEX:
+  class: generic_from_csv
+  fname: data/reflex.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (REFLEX)"
+  z_col: z
+  name_col: RXC
+
+CIZA:
+  class: generic_from_csv
+  fname: data/ciza.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (CIZA)"
+  z_col: z
+  name_col: CIZA
+
+CIZA2:
+  class: generic_from_csv
+  fname: data/ciza2.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (CIZA2)"
+  z_col: z
+  name_col: CIZA
+
+MCXC:
+  class: MCXC
+  fname: data/mcxc.csv.gz
+  ra_col: RAdeg
+  dec_col: DEdeg
+  catname: " (MCXC)"
+  z_col: z
+  name_col: MCXC
+  r500_col: r500
+
+PSZ2:
+  class: generic_from_csv
+  fname: data/psz2.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
+SPTSZ:
+  class: generic_from_csv
+  fname: data/sptsz.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
+SPTECS:
+  class: generic_from_csv
+  fname: data/sptecs.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
+SPTPOL100d:
+  class: generic_from_csv
+  fname: data/sptpol100d.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
+AdvancedACTPol:
+  class: generic_from_csv
+  fname: data/aactpol.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
+SDSS_RM:
+  class: generic_from_csv
+  fname: data/sdss_redmapper.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: " (SDSS dr8)"
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+  bonus_col: lambda

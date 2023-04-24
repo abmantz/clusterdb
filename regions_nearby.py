@@ -5,16 +5,23 @@ from glob import glob
 import os
 import numpy as np
 import pandas as pd
+import yaml
 
+# get the root of the code repo
 thisdir = os.path.dirname(os.path.realpath(__file__)) + '/'
 
+# class that knows how to print output
 class Match:
-    def __init__(self, coords, distance, name=None, radius=None, redshift=None):
+    def __init__(self, coords, distance, name=None, radius=None, redshift=None, bonus=None, bonus_col=None):
         self.coords = coords
         self.radius = radius
         self.distance = distance
         self.name = name
         self.redshift = redshift
+        if bonus_col is not None and bonus is not None:
+            self.bonus = ' '+bonus_col+'='+str(bonus)
+        else:
+            self.bonus = ''
     def __str__(self):
         if self.radius is None or not np.isfinite(self.radius):
             s = 'point('
@@ -29,6 +36,7 @@ class Match:
         if self.redshift is not None:
             s += 'z=' + str(self.redshift) + ' '
         s += 'distance: ' + str(self.distance.to_value(u.arcmin)) + "'"
+        s += self.bonus
         return s
     def notregion(self):
         if self.name is None:
@@ -43,17 +51,12 @@ class Match:
             s += str(self.redshift)
         return s
 
+# class to read catalogs from a csv
 class generic_from_csv:
-    def __init__(self):
-        # create required fields, not that things will function without being
-        # properly constructed
-        self.pos = None
-        self.z = None
-        self.pos_err = None
-        self.r500 = None
-        self.name = None
-    def read(self, fname, ra_col, dec_col, catname='', z_col=None, name_col=None, pos_err_col=None, r500_col=None, coord_unit='deg', pos_err_unit=u.degree, r500_unit=u.degree):
-        x = pd.read_csv(fname)
+    def __init__(self, *args, **kwargs):
+        self.data = self._read(*args, **kwargs)
+    def _read(self, fname, ra_col, dec_col, catname='', z_col=None, name_col=None, pos_err_col=None, r500_col=None, coord_unit='deg', pos_err_unit=u.degree, r500_unit=u.degree, bonus_col=None):
+        x = pd.read_csv(thisdir+fname)
         self.pos = SkyCoord(ra=x[ra_col], dec=x[dec_col], unit=coord_unit)
         if z_col is None:
             self.z = [None] * len(self.pos)
@@ -74,89 +77,58 @@ class generic_from_csv:
         if name_col is None:
             self.name = ["???"+catname] * len(self.pos)
         else:
-            self.name = [n+catname for n in x[name_col]]
+            self.name = [str(n)+catname for n in x[name_col]]
+        self.catname = catname
+        if bonus_col is None:
+            self.bonus = [None] * len(self.pos)
+        else:
+            self.bonus = x[bonus_col]
+        self.bonus_col = bonus_col
         return x
     def search(self, from_coords, radius):
         d = from_coords.separation(self.pos)
         selection = np.where(d<=radius)[0]
-        return [Match(self.pos[i], d[i], name=self.name[i], radius=self.r500[i], redshift=self.z[i]) for i in selection[np.argsort(d[selection])]]
+        return [Match(self.pos[i], d[i], name=self.name[i], radius=self.r500[i], redshift=self.z[i], bonus=self.bonus[i], bonus_col=self.bonus_col) for i in selection[np.argsort(d[selection])]]
 
-class BCS(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/bcs.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (BCS)', z_col='z', name_col='Name')
-
-class eBCS(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/ebcs.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (eBCS)', z_col='z', name_col='Name')
-
-class REFLEX(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/reflex.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (REFLEX)', z_col='z', name_col='RXC')
-
-class CIZA(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/ciza.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (CIZA)', z_col='z', name_col='CIZA')
-        
-class CIZA2(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/ciza2.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=' (CIZA2)', z_col='z', name_col='CIZA')
-        
+# specialization to deal with a catalog with multiple name columns
 class MCXC(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        catname = ' (MCXC)'
-        x = self.read(thisdir+'data/mcxc.csv.gz', ra_col='RAdeg', dec_col='DEdeg', catname=catname, z_col='z', name_col='MCXC', r500_col='r500')
+    def __init__(self, *args, **kwargs):
+        generic_from_csv.__init__(self, *args, **kwargs)
+        x = self.data
         for i in range(len(self.name)):
             if x['Aname'][i] != "":
-                self.name[i] = str(x['Aname'][i])+catname
+                self.name[i] = str(x['Aname'][i])+self.catname
             elif x['Oname'][i] != "":
-                self.name[i] = str(x['Oname'][i])+catname
+                self.name[i] = str(x['Oname'][i])+self.catname
 
-class PSZ2(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/psz2.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', pos_err_col='pos_err', r500_col='r500')
-
-class SPTSZ(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/sptsz.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
-
-class SPTECS(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/sptecs.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
-
-class SPTPOL100d(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/sptpol100d.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
-
-class AdvancedACTPol(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/aactpol.csv.gz', ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
-
-class SDSS_RM(generic_from_csv):
-    def __init__(self):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(thisdir+'data/sdss_redmapper.csv.gz', ra_col='RA', dec_col='dec', catname=' (SDSS dr8)', z_col='redshift', name_col='name', r500_col='r500')
-
-class YetAnotherClusterSurvey(generic_from_csv):
-    def __init__(self, csvname):
-        generic_from_csv.__init__(self) # unnecessarily
-        self.read(csvname, ra_col='RA', dec_col='dec', catname='', z_col='redshift', name_col='name', r500_col='r500')
-
-        
-allcats = {'BCS':BCS, 'eBCS':eBCS, 'REFLEX':REFLEX, 'CIZA':CIZA, 'CIZA2':CIZA2, 'MCXC':MCXC, 'PSZ2':PSZ2, 'SPTSZ':SPTSZ, 'SPTECS':SPTECS, 'SPTPOL100d':SPTPOL100d, 'AdvancedACTPol':AdvancedACTPol, 'SDSS_RM':SDSS_RM}
-default_cats = 'MCXC PSZ2 SPTSZ SPTECS SPTPOL100d AdvancedACTPol SDSS_RM'
+# these are the kinds of catalog classes we know of
+classes = {'generic_from_csv':generic_from_csv, 'MCXC':MCXC}
 
 
+# read properties of built-in catalogs
+with open(thisdir+'data/catalogs.yaml', 'r') as thisfile:
+    info = yaml.safe_load(thisfile.read())
+# same for local catalogs, if any, overwriting any common entries
+try:
+    with open(thisdir+'local/catalogs.yaml', 'r') as thisfile:
+        loc = yaml.safe_load(thisfile.read())
+        info.update(loc)
+        local_cats = list(loc.keys())
+except FileNotFoundError:
+    local_cats = []
+    pass
+
+# these are the built-in catalogs used by default, plus locals, sorted
+default_cats = list(set('MCXC PSZ2 SPTSZ SPTECS SPTPOL100d AdvancedACTPol SDSS_RM'.split() + local_cats))
+default_cats.sort()
+default_cats = ' '.join(default_cats)
+
+# list of all catalogs
+all_cats = list(info.keys())
+all_cats.sort()
+
+
+# argument parsing
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.\nDefault catalogs: "+default_cats)
 parser.add_argument(
     'ra',
@@ -171,12 +143,12 @@ parser.add_argument(
 parser.add_argument(
     '--radius',
     type=float,
-    help="search radius in arcmin (default=15')",
+    help="search radius in arcmin (default=15)",
     default=15.0
 )
 parser.add_argument(
     '--cats',
-    help="catalogs to search, a subset of " + ' '.join(allcats.keys()),
+    help="catalogs to search, a subset of " + ' '.join(all_cats),
     default=default_cats
 )
 parser.add_argument(
@@ -198,7 +170,6 @@ parser.add_argument(
     action="store_true"
 )
 
-
 args = parser.parse_args()
 radius = args.radius * u.arcmin
 radius_boost = 1.0
@@ -207,16 +178,22 @@ if args.r200:
     radius_boost = 1.53
     radius_name = 'r200'
 
+
+# where to search
 target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
 
+
+# finalize the list of catalogs to look in
 catss = args.cats
 if args.oldxray:
     catss += ' BCS eBCS REFLEX CIZA CIZA2'
 catsl = list(set(catss.split())) # eliminate repeats
-cats = [allcats[k]() for k in catsl]
-for f in glob(thisdir+'local/*.csv.gz'):
-    cats += [YetAnotherClusterSurvey(f)]
 
+# read the catalogs
+cats = [classes[info[k].pop('class')](**info[k]) for k in catsl]
+
+
+# write an appropriate header
 if args.notregion:
     print("name | ra | dec | distance[arcmin] | "+radius_name+"[arcmin] | redshift")
 else:
@@ -224,10 +201,10 @@ else:
     print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
     print('fk5')
 
+# write matches found in each catalog
 for cat in cats:
     for m in cat.search(target, radius):
         if args.notregion:
             print(m.notregion())
         else:
             print(str(m))
-
