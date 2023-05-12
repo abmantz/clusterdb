@@ -96,9 +96,9 @@ class MCXC(generic_from_csv):
         generic_from_csv.__init__(self, *args, **kwargs)
         x = self.data
         for i in range(len(self.name)):
-            if x['Aname'][i] != "":
+            if str(x['Aname'][i]) != "nan":
                 self.name[i] = str(x['Aname'][i])+self.catname
-            elif x['Oname'][i] != "":
+            elif str(x['Oname'][i]) != "nan":
                 self.name[i] = str(x['Oname'][i])+self.catname
 
 # these are the kinds of catalog classes we know of
