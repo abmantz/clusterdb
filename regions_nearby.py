@@ -129,7 +129,6 @@ default_cats = ' '.join(default_cats)
 all_cats = list(info.keys())
 all_cats.sort()
 
-
 # argument parsing
 parser = argparse.ArgumentParser(description="Look up known clusters within some angular distance of a given position.\nDefault catalogs: "+default_cats)
 parser.add_argument(
