@@ -104,7 +104,6 @@ class MCXC(generic_from_csv):
 # these are the kinds of catalog classes we know of
 classes = {'generic_from_csv':generic_from_csv, 'MCXC':MCXC}
 
-
 # read properties of built-in catalogs
 with open(thisdir+'data/catalogs.yaml', 'r') as thisfile:
     info = yaml.safe_load(thisfile.read())
@@ -119,7 +118,10 @@ except FileNotFoundError:
     pass
 
 # these are the built-in catalogs used by default, plus locals, sorted
-default_cats = list(set('MCXC PSZ2 SPTSZ SPTECS SPTPOL100d AdvancedACTPol SDSS_RM'.split() + local_cats))
+default_str = 'MCXC PSZ2 SPTSZ SPTECS SPTPOL100d AdvancedACTPol SDSS_RM'
+if not 'DES_Y3' in local_cats:
+    default_str += 'DES_Y1'
+default_cats = list(set(default_str.split() + local_cats))
 default_cats.sort()
 default_cats = ' '.join(default_cats)
 

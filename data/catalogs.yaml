@@ -113,3 +113,14 @@ SDSS_RM:
   name_col: name
   r500_col: r500
   bonus_col: lambda
+
+DES_Y1:
+  class: generic_from_csv
+  fname: data/desY1a1.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: " (DES Y1)"
+  z_col: redshift
+  name_col: ID
+  r500_col: r500
+  bonus_col: lambda
