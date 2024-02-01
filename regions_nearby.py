@@ -119,8 +119,8 @@ except FileNotFoundError:
 
 # these are the built-in catalogs used by default, plus locals, sorted
 default_str = 'MCXC PSZ2 SPTSZ SPTECS SPTPOL100d AdvancedACTPol SDSS_RM'
-if not 'DES_Y3' in local_cats:
-    default_str += 'DES_Y1'
+if not 'DESy3_RM' in local_cats:
+    default_str += ' DES_Y1'
 default_cats = list(set(default_str.split() + local_cats))
 default_cats.sort()
 default_cats = ' '.join(default_cats)
