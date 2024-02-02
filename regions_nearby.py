@@ -49,6 +49,9 @@ class Match:
         s += ' | '
         if self.redshift is not None:
             s += str(self.redshift)
+        s += ' | '
+        if self.bonus is not None:
+            s += str(self.bonus)
         return s
 
 # class to read catalogs from a csv
@@ -196,7 +199,7 @@ cats = [classes[info[k].pop('class')](**info[k]) for k in catsl]
 
 # write an appropriate header
 if args.notregion:
-    print("name | ra | dec | distance[arcmin] | "+radius_name+"[arcmin] | redshift")
+    print("name | ra | dec | distance[arcmin] | "+radius_name+"[arcmin] | redshift | bonus")
 else:
     print('# Region file format: DS9 version 4.1')
     print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
