@@ -124,3 +124,23 @@ DES_Y1:
   name_col: ID
   r500_col: r500
   bonus_col: lambda
+
+eRASS1_pt:
+  class: generic_from_csv
+  fname: data/erass1-m_pointlike.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: null
+  name_col: name
+  r500_col: null
+
+eRASS1_ext:
+  class: generic_from_csv
+  fname: data/erass1-m_extended.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: null
+  name_col: name
+  r500_col: null
