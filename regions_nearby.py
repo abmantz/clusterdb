@@ -168,10 +168,22 @@ parser.add_argument(
     action="store_true"
 )
 parser.add_argument(
+    '--simple',
+    dest="simple",
+    help="only report names and catalogs of matches",
+    action="store_true"
+)
+parser.add_argument(
     '--r200',
     dest="r200",
     help="use r200 instead of r500 for region radii",
     action="store_true"
+)
+parser.add_argument(
+    '--coordfile',
+    dest="coordfile",
+    help="2-column table to get RA and Dec from (dummy command line args still required)",
+    default = ""
 )
 
 args = parser.parse_args()
@@ -183,9 +195,6 @@ if args.r200:
     radius_name = 'r200'
 
 
-# where to search
-target = SkyCoord(ra=args.ra, dec=args.dec, unit='deg')
-
 
 # finalize the list of catalogs to look in
 catss = args.cats
@@ -196,19 +205,35 @@ catsl = list(set(catss.split())) # eliminate repeats
 # read the catalogs
 cats = [classes[info[k].pop('class')](**info[k]) for k in catsl]
 
-
-# write an appropriate header
-if args.notregion:
-    print("name | ra | dec | distance[arcmin] | "+radius_name+"[arcmin] | redshift | bonus")
+# where to search
+if args.coordfile == "":
+    ras = [args.ra]
+    decs = [args.dec]
 else:
-    print('# Region file format: DS9 version 4.1')
-    print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
-    print('fk5')
+    coords = np.loadtxt(args.coordfile)
+    ras = coords[:,0]
+    decs = coords[:,1]
 
-# write matches found in each catalog
-for cat in cats:
-    for m in cat.search(target, radius):
-        if args.notregion:
-            print(m.notregion())
-        else:
-            print(str(m))
+for ra,dec in zip(ras,decs):
+
+    target = SkyCoord(ra=ra, dec=dec, unit='deg')
+    if len(ras) > 1:
+        print('# Searching around',ra, dec)
+
+    # write an appropriate header
+    if args.notregion:
+        print("name | ra | dec | distance[arcmin] | "+radius_name+"[arcmin] | redshift | bonus")
+    elif not args.simple:
+        print('# Region file format: DS9 version 4.1')
+        print('global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1')
+        print('fk5')
+
+    # write matches found in each catalog
+    for cat,catname in zip(cats,catsl):
+        for m in cat.search(target, radius):
+            if args.simple:
+                print('\t'.join([catname, m.name, str(m.distance.to(u.arcsec))]))
+            elif args.notregion:
+                print(m.notregion())
+            else:
+                print(str(m))
