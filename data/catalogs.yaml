@@ -93,6 +93,16 @@ SPTPOL100d:
   name_col: name
   r500_col: r500
 
+SPT3GDeep:
+  class: generic_from_csv
+  fname: data/spt3Gdeep.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
+  r500_col: r500
+
 AdvancedACTPol:
   class: generic_from_csv
   fname: data/aactpol.csv.gz
@@ -122,6 +132,17 @@ DES_Y1:
   catname: " (DES Y1)"
   z_col: redshift
   name_col: ID
+  r500_col: r500
+  bonus_col: lambda
+
+DES_Y3:
+  class: generic_from_csv
+  fname: data/DESy3_redmapper.csv.gz
+  ra_col: RA
+  dec_col: dec
+  catname: ""
+  z_col: redshift
+  name_col: name
   r500_col: r500
   bonus_col: lambda
 
